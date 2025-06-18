@@ -5,13 +5,41 @@
       - bind-utils
     state: present
 
-- name: Deploy named.conf (templated)
-  template:
-    src: named.conf.j2
-    dest: /etc/named.conf
-    owner: root
-    group: named
-    mode: '0644'
+- name: Ensure custom zones are included in named.conf (slave)
+  blockinfile:
+    path: /etc/named.conf
+    marker: "# {mark} Ansible managed custom slave zones"
+    block: |
+      zone "example48.lab" IN {
+          type slave;
+          masters { 172.16.30.48; };
+          file "slaves/slave.example48.lab";
+      };
+
+      zone "16.172.in-addr.arpa" IN {
+          type slave;
+          masters { 172.16.30.48; };
+          file "slaves/slave.named.16.172";
+      };
+  when: inventory_hostname == 'haja0013-CTL'
+
+- name: Ensure custom zones are included in named.conf (master)
+  blockinfile:
+    path: /etc/named.conf
+    marker: "# {mark} Ansible managed custom master zones"
+    block: |
+      zone "example48.lab" IN {
+          type master;
+          file "/var/named/labtest.lab.zone";
+          allow-transfer { 172.16.32.0/24; };
+      };
+
+      zone "16.172.in-addr.arpa" IN {
+          type master;
+          file "/var/named/16.rev.zone";
+          allow-transfer { 172.16.32.0/24; };
+      };
+  when: inventory_hostname == 'haja0013-SRV'
 
 - name: Deploy forward zone file for labtest.lab (only on server/master)
   template:

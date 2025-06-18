@@ -1,8 +1,10 @@
-- hosts: all
+- name: Apply full configuration to all hosts
+  hosts: all
   become: true
   roles:
-    -common
-    -ssh
-    -iptables
-    -nc
-    -dns
+    - common
+    - ssh
+    - iptables
+    - nc
+    - dns
+
