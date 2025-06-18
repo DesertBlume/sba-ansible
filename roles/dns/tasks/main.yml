@@ -13,7 +13,7 @@
     group: named
     mode: '0644'
 
-- name: Deploy zone file for labtest.lab (only on master)
+- name: Deploy forward zone file for labtest.lab (only on server/master)
   template:
     src: labtest.lab.zone.j2
     dest: /var/named/labtest.lab.zone
@@ -21,6 +21,24 @@
     group: named
     mode: '0644'
   when: inventory_hostname == 'haja0013-SRV'
+
+- name: Deploy reverse zone file for 172.16.30.48 and 172.16.32.48 (only on server/master)
+  template:
+    src: 16.rev.zone.j2
+    dest: /var/named/16.rev.zone
+    owner: root
+    group: named
+    mode: '0644'
+  when: inventory_hostname == 'haja0013-SRV'
+
+- name: Create slave zone directory (only on slave)
+  file:
+    path: /var/named/slaves
+    state: directory
+    owner: named
+    group: named
+    mode: '0755'
+  when: inventory_hostname == 'haja0013-CTL'
 
 - name: Ensure named service is enabled and started
   service:

@@ -5,18 +5,33 @@
   when: inventory_hostname == 'haja0013-SRV'
 
 - name: Allow TCP port {{ netcat_port }} from SERVER network ({{ server_network }})
-  command: >
-    iptables -A INPUT -p tcp -s {{ server_network }} --dport {{ netcat_port }} -j ACCEPT
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: "{{ server_network }}"
+    destination_port: "{{ netcat_port }}"
+    jump: ACCEPT
+    state: present
   when: inventory_hostname == 'haja0013-SRV'
 
 - name: Allow TCP port {{ netcat_port }} from ALIAS network ({{ alias_network }})
-  command: >
-    iptables -A INPUT -p tcp -s {{ alias_network }} --dport {{ netcat_port }} -j ACCEPT
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: "{{ alias_network }}"
+    destination_port: "{{ netcat_port }}"
+    jump: ACCEPT
+    state: present
   when: inventory_hostname == 'haja0013-SRV'
 
 - name: Drop TCP port {{ netcat_port }} from CLIENT network ({{ client_network }})
-  command: >
-    iptables -A INPUT -p tcp -s {{ client_network }} --dport {{ netcat_port }} -j REJECT
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: "{{ client_network }}"
+    destination_port: "{{ netcat_port }}"
+    jump: REJECT
+    state: present
   when: inventory_hostname == 'haja0013-SRV'
 
 - name: Save iptables rules permanently (RHEL 8)
@@ -29,4 +44,3 @@
     enabled: true
     state: started
   when: inventory_hostname == 'haja0013-SRV'
-
