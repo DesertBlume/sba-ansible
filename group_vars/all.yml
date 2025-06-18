@@ -1,0 +1,7 @@
+ient_pubkey_path: "/root/.ssh/id_rsa.pub"
+netcat_port: 55765
+server_network: "172.16.30.0/24"
+alias_network: "172.16.32.0/24"
+client_network: "172.16.31.0/24"
+dns_zone: "labtest.lab"
+

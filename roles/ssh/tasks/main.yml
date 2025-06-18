@@ -1,0 +1,26 @@
+- name: Configure SSH for key-based access
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+    loop:
+      - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication no' }
+      - { regexp: '^PermitRootLogin',       line: 'PermitRootLogin yes' }
+      - { regexp: '^PubkeyAuthentication',  line: 'PubkeyAuthentication yes' }
+
+- name: Add public key to root's authorized_keys
+  authorized_key:
+      user: root
+      key: "{{ lookup('file', client_pubkey_path) }}"
+  when: inventory_hostname == 'haja0013-SRV' or inventory_hostname == 'haja0013-CTL'
+
+- name: Add public key to lab's authorized_keys
+  authorized_key:
+      user: lab
+      key: "{{ lookup('file', client_pubkey_path) }}"
+  when: inventory_hostname == 'haja0013-SRV'
+
+- name: Restart SSH service
+  service:
+      name: sshd
+      state: restarted

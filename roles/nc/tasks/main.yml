@@ -1,0 +1,19 @@
+- name: Ensure nc is installed
+  package:
+    name: nmap-ncat
+    state: present
+  when: inventory_hostname == 'haja0013-SRV'
+
+- name: Start netcat listener on port 55765
+  shell: "nohup nc -lk {{ netcat_port }} > /tmp/nc.log 2>&1 &"
+  args:
+    creates: /tmp/nc_listener_started
+  register: nc_listener_started
+  when: inventory_hostname == 'haja0013-SRV'
+
+- name: Create marker file for listener
+  file:
+    path: /tmp/nc_listener_started
+    state: touch
+  when: nc_listener_started is changed
+
