@@ -5,21 +5,91 @@
       - bind-utils
     state: present
 
+- name: Remove existing options block in named.conf (master)
+  ansible.builtin.replace:
+    path: /etc/named.conf
+    regexp: 'options\s*\{.*?\};'
+    replace: ''
+    backup: yes
+  when: inventory_hostname == 'haja0013-SRV'
+
+- name: Insert custom options block (master only)
+  blockinfile:
+    path: /etc/named.conf
+    marker: "# {mark} Ansible managed options block"
+    insertafter: BOF
+    block: |
+      options {
+          listen-on port 53 { 127.0.0.1; 172.16.30.48; 172.16.32.48; };
+          listen-on-v6 port 53 { ::1; };
+          directory "/var/named";
+          dump-file "/var/named/data/cache_dump.db";
+          statistics-file "/var/named/data/named_stats.txt";
+          memstatistics-file "/var/named/data/named_mem_stats.txt";
+          secroots-file "/var/named/data/named.secroots";
+          recursing-file "/var/named/data/named.recursing";
+          allow-query { localhost; 172.16.0.0/16; };
+          allow-transfer { 172.16.31.48; };
+          recursion yes;
+          dnssec-enable yes;
+          dnssec-validation yes;
+          managed-keys-directory "/var/named/dynamic";
+          pid-file "/run/named/named.pid";
+          session-keyfile "/run/named/session.key";
+          include "/etc/crypto-policies/back-ends/bind.config";
+      };
+  when: inventory_hostname == 'haja0013-SRV'
+
+- name: Remove existing options block in named.conf (slave)
+  ansible.builtin.replace:
+    path: /etc/named.conf
+    regexp: 'options\s*\{.*?\};'
+    replace: ''
+    backup: yes
+  when: inventory_hostname == 'haja0013-CTL'
+
+- name: Insert custom options block (slave only)
+  blockinfile:
+    path: /etc/named.conf
+    marker: "# {mark} Ansible managed options block"
+    insertafter: BOF
+    block: |
+      options {
+          listen-on port 53 { 127.0.0.1; 172.16.31.48; };
+          listen-on-v6 port 53 { ::1; };
+          directory "/var/named";
+          dump-file "/var/named/data/cache_dump.db";
+          statistics-file "/var/named/data/named_stats.txt";
+          memstatistics-file "/var/named/data/named_mem_stats.txt";
+          secroots-file "/var/named/data/named.secroots";
+          recursing-file "/var/named/data/named.recursing";
+          allow-query { localhost; 172.16.0.0/16; };
+          recursion yes;
+          dnssec-enable yes;
+          dnssec-validation yes;
+          managed-keys-directory "/var/named/dynamic";
+          pid-file "/run/named/named.pid";
+          session-keyfile "/run/named/session.key";
+          include "/etc/crypto-policies/back-ends/bind.config";
+      };
+  when: inventory_hostname == 'haja0013-CTL'
+
 - name: Ensure custom zones are included in named.conf (slave)
   blockinfile:
     path: /etc/named.conf
     marker: "# {mark} Ansible managed custom slave zones"
+    insertafter: 'include \"/etc/named.root.key\";'
     block: |
-      zone "example48.lab" IN {
+      zone "labtest.lab" IN {
           type slave;
           masters { 172.16.30.48; };
-          file "slaves/slave.example48.lab";
+          file "slaves/slave.fwd-labtest.lab.zone";
       };
 
       zone "16.172.in-addr.arpa" IN {
           type slave;
           masters { 172.16.30.48; };
-          file "slaves/slave.named.16.172";
+          file "slaves/slave.rev-16.172.zone";
       };
   when: inventory_hostname == 'haja0013-CTL'
 
@@ -27,24 +97,29 @@
   blockinfile:
     path: /etc/named.conf
     marker: "# {mark} Ansible managed custom master zones"
+    insertafter: 'include \"/etc/named.root.key\";'
     block: |
-      zone "example48.lab" IN {
+      zone "labtest.lab" IN {
           type master;
-          file "/var/named/labtest.lab.zone";
-          allow-transfer { 172.16.32.0/24; };
+          file "/var/named/fwd-labtest.lab.zone";
+          allow-transfer { 172.16.31.48; };
+          also-notify    { 172.16.31.48; };    
+          notify yes;
       };
 
       zone "16.172.in-addr.arpa" IN {
           type master;
-          file "/var/named/16.rev.zone";
-          allow-transfer { 172.16.32.0/24; };
+          file "/var/named/rev-16.172.zone";
+          allow-transfer { 172.16.31.48; };
+          also-notify    { 172.16.31.48; };    
+          notify yes;
       };
   when: inventory_hostname == 'haja0013-SRV'
 
 - name: Deploy forward zone file for labtest.lab (only on server/master)
   template:
     src: labtest.lab.zone.j2
-    dest: /var/named/labtest.lab.zone
+    dest: /var/named/fwd-labtest.lab.zone
     owner: root
     group: named
     mode: '0644'
@@ -52,8 +127,8 @@
 
 - name: Deploy reverse zone file for 172.16.30.48 and 172.16.32.48 (only on server/master)
   template:
-    src: 16.rev.zone.j2
-    dest: /var/named/16.rev.zone
+    src: rev-16.172.zone.j2
+    dest: /var/named/rev-16.172.zone
     owner: root
     group: named
     mode: '0644'
@@ -73,3 +148,9 @@
     name: named
     state: started
     enabled: true
+
+- name: Ensure named service is restarted
+  service:
+    name: named
+    state: restarted
+
