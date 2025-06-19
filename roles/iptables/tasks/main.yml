@@ -1,3 +1,15 @@
+- name: Flush iptables rules (master only)
+  command: iptables -F
+  when: inventory_hostname == 'haja0013-SRV'
+
+- name: Set iptables default policies to ACCEPT (master only)
+  command: iptables -P {{ item.chain }} ACCEPT
+  loop:
+    - { chain: 'INPUT' }
+    - { chain: 'FORWARD' }
+    - { chain: 'OUTPUT' }
+  when: inventory_hostname == 'haja0013-SRV'
+
 - name: Ensure iptables-services is installed
   package:
     name: iptables-services
@@ -44,3 +56,4 @@
     enabled: true
     state: started
   when: inventory_hostname == 'haja0013-SRV'
+

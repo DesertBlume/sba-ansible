@@ -3,6 +3,7 @@
   become: true
   roles:
     - common
+    - pre_ssh_hardening
     - ssh
     - iptables
     - nc

@@ -5,20 +5,19 @@
       - bind-utils
     state: present
 
-- name: Remove existing options block in named.conf (master)
-  ansible.builtin.replace:
-    path: /etc/named.conf
-    regexp: 'options\s*\{.*?\};'
-    replace: ''
-    backup: yes
-  when: inventory_hostname == 'haja0013-SRV'
+- name: Replace named.conf with custom version (master only)
+  copy:
+    dest: /etc/named.conf
+    content: |
+      //
+      // named.conf
+      //
+      // Provided by Red Hat bind package to configure the ISC BIND named(8) DNS
+      // server as a caching only nameserver (as a localhost DNS resolver only).
+      //
+      // See /usr/share/doc/bind*/sample/ for example named configuration files.
+      //
 
-- name: Insert custom options block (master only)
-  blockinfile:
-    path: /etc/named.conf
-    marker: "# {mark} Ansible managed options block"
-    insertafter: BOF
-    block: |
       options {
           listen-on port 53 { 127.0.0.1; 172.16.30.48; 172.16.32.48; };
           listen-on-v6 port 53 { ::1; };
@@ -38,22 +37,40 @@
           session-keyfile "/run/named/session.key";
           include "/etc/crypto-policies/back-ends/bind.config";
       };
+
+      zone "labtest.lab" IN {
+          type master;
+          file "/var/named/fwd-labtest.lab.zone";
+          allow-transfer { 172.16.31.48; };
+          also-notify { 172.16.31.48; };
+          notify yes;
+      };
+
+      zone "16.172.in-addr.arpa" IN {
+          type master;
+          file "/var/named/rev-16.172.zone";
+          allow-transfer { 172.16.31.48; };
+          also-notify { 172.16.31.48; };
+          notify yes;
+      };
+
+      include "/etc/named.rfc1912.zones";
+      include "/etc/named.root.key";
   when: inventory_hostname == 'haja0013-SRV'
 
-- name: Remove existing options block in named.conf (slave)
-  ansible.builtin.replace:
-    path: /etc/named.conf
-    regexp: 'options\s*\{.*?\};'
-    replace: ''
-    backup: yes
-  when: inventory_hostname == 'haja0013-CTL'
+- name: Replace named.conf with custom version (slave only)
+  copy:
+    dest: /etc/named.conf
+    content: |
+      //
+      // named.conf
+      //
+      // Provided by Red Hat bind package to configure the ISC BIND named(8) DNS
+      // server as a caching only nameserver (as a localhost DNS resolver only).
+      //
+      // See /usr/share/doc/bind*/sample/ for example named configuration files.
+      //
 
-- name: Insert custom options block (slave only)
-  blockinfile:
-    path: /etc/named.conf
-    marker: "# {mark} Ansible managed options block"
-    insertafter: BOF
-    block: |
       options {
           listen-on port 53 { 127.0.0.1; 172.16.31.48; };
           listen-on-v6 port 53 { ::1; };
@@ -72,14 +89,7 @@
           session-keyfile "/run/named/session.key";
           include "/etc/crypto-policies/back-ends/bind.config";
       };
-  when: inventory_hostname == 'haja0013-CTL'
 
-- name: Ensure custom zones are included in named.conf (slave)
-  blockinfile:
-    path: /etc/named.conf
-    marker: "# {mark} Ansible managed custom slave zones"
-    insertafter: 'include \"/etc/named.root.key\";'
-    block: |
       zone "labtest.lab" IN {
           type slave;
           masters { 172.16.30.48; };
@@ -91,30 +101,10 @@
           masters { 172.16.30.48; };
           file "slaves/slave.rev-16.172.zone";
       };
+
+      include "/etc/named.rfc1912.zones";
+      include "/etc/named.root.key";
   when: inventory_hostname == 'haja0013-CTL'
-
-- name: Ensure custom zones are included in named.conf (master)
-  blockinfile:
-    path: /etc/named.conf
-    marker: "# {mark} Ansible managed custom master zones"
-    insertafter: 'include \"/etc/named.root.key\";'
-    block: |
-      zone "labtest.lab" IN {
-          type master;
-          file "/var/named/fwd-labtest.lab.zone";
-          allow-transfer { 172.16.31.48; };
-          also-notify    { 172.16.31.48; };    
-          notify yes;
-      };
-
-      zone "16.172.in-addr.arpa" IN {
-          type master;
-          file "/var/named/rev-16.172.zone";
-          allow-transfer { 172.16.31.48; };
-          also-notify    { 172.16.31.48; };    
-          notify yes;
-      };
-  when: inventory_hostname == 'haja0013-SRV'
 
 - name: Deploy forward zone file for labtest.lab (only on server/master)
   template:
