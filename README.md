@@ -36,7 +36,7 @@ The playbooks were deployed from a WSL Ubuntu client targeting RHEL 8 VMs.
   - **Allows** connections from `SERVER` (172.16.30.0/16) and `ALIAS` (172.16.32.0/16)
   - **Rejects** connections from the `CLIENT` network (172.16.31.0/16)
 
-- 🌐 **DNS Services**:
+- **DNS Services**:
   - Configures `ns1 & ns2` (master) on 172.16.30.MN, 172.16.32.MN
   - Zone files and `named.conf` are deployed and verified
   - Zone transfer is tested and confirmed
