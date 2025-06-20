@@ -4,9 +4,9 @@
     key: "{{ lookup('file', client_pubkey_path) }}"
   when: inventory_hostname == 'haja0013-SRV' or inventory_hostname == 'haja0013-CTL'
 
-- name: Add public key to lab's authorized_keys
+- name: Add public key to Thursdays's authorized_keys
   authorized_key:
-    user: lab
+    user: Thursday
     key: "{{ lookup('file', client_pubkey_path) }}"
   when: inventory_hostname == 'haja0013-SRV'
 
@@ -26,3 +26,4 @@
   service:
     name: sshd
     state: restarted
+

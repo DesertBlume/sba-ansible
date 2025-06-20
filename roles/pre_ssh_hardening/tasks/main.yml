@@ -62,8 +62,8 @@
   delegate_to: haja0013-CTL
   run_once: true
 
-- name: Send cst8246's key to lab on the server
-  ansible.builtin.shell: sshpass -p 'test' ssh-copy-id -o StrictHostKeyChecking=no lab@172.16.30.48
+- name: Send cst8246's key to Thursday on the server
+  ansible.builtin.shell: sshpass -p '123' ssh-copy-id -o StrictHostKeyChecking=no Thursday@172.16.30.48
   become: yes
   become_user: cst8246
   delegate_to: haja0013-CTL
@@ -81,9 +81,10 @@
   delegate_to: haja0013-CTL
   run_once: true
 
-- name: Send root's key to lab on the server
-  ansible.builtin.shell: sshpass -p 'test' ssh-copy-id -o StrictHostKeyChecking=no lab@172.16.30.48
+- name: Send root's key to Thursday on the server
+  ansible.builtin.shell: sshpass -p '123' ssh-copy-id -o StrictHostKeyChecking=no Thursday@172.16.30.48
   become: yes
   delegate_to: haja0013-CTL
   run_once: true
+
 

@@ -1,12 +1,11 @@
 $TTL 86400
-@   IN  SOA dns1.labtest.lab. admin.labtest.lab. (
+@   IN  SOA ns1.jupiter.lab. admin.jupiter.lab. (
         2025061801  ; Serial
         3600        ; Refresh
         1800        ; Retry
         604800      ; Expire
         86400 )     ; Minimum
-    	IN  NS  dns1.labtest.lab.
-		IN	NS	dns2.labtest.lab.
-48.30   IN  PTR dns1.labtest.lab.
-48.32   IN  PTR dns2.labtest.lab.
-
+    	IN  NS  ns1.jupiter.lab.
+	IN  NS	ns2.jupiter.lab.
+48.30   IN  PTR ns1.jupiter.lab.
+48.32   IN  PTR ns2.jupiter.lab.

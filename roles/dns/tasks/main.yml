@@ -38,9 +38,9 @@
           include "/etc/crypto-policies/back-ends/bind.config";
       };
 
-      zone "labtest.lab" IN {
+      zone "jupiter.lab" IN {
           type master;
-          file "/var/named/fwd-labtest.lab.zone";
+          file "/var/named/fwd-jupiter.lab.zone";
           allow-transfer { 172.16.31.48; };
           also-notify { 172.16.31.48; };
           notify yes;
@@ -90,10 +90,10 @@
           include "/etc/crypto-policies/back-ends/bind.config";
       };
 
-      zone "labtest.lab" IN {
+      zone "jupiter.lab" IN {
           type slave;
           masters { 172.16.30.48; };
-          file "slaves/slave.fwd-labtest.lab.zone";
+          file "slaves/slave.fwd-jupiter.lab.zone";
       };
 
       zone "16.172.in-addr.arpa" IN {
@@ -106,10 +106,10 @@
       include "/etc/named.root.key";
   when: inventory_hostname == 'haja0013-CTL'
 
-- name: Deploy forward zone file for labtest.lab (only on server/master)
+- name: Deploy forward zone file for jupiter.lab (only on server/master)
   template:
-    src: labtest.lab.zone.j2
-    dest: /var/named/fwd-labtest.lab.zone
+    src: jupiter.lab.zone.j2
+    dest: /var/named/fwd-jupiter.lab.zone
     owner: root
     group: named
     mode: '0644'
@@ -143,4 +143,5 @@
   service:
     name: named
     state: restarted
+
 
