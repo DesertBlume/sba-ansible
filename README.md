@@ -56,6 +56,27 @@ The playbooks were deployed from a WSL Ubuntu client targeting RHEL 8 VMs.
 - BIND (`named`)
 - Netcat (nc)
 
+## Future Improvements
+
+This project could be improved further in the following ways:
+
+- **Automated Validation with Ansible**  
+  I currently use a Bash script that launches multiple `tmux` sessions  
+  from the client VM. These sessions SSH into the servers to test  
+  `nc` connectivity, DNS resolution with `dig`, and SSH restrictions.  
+  In the future, I plan to move this logic into Ansible playbooks  
+  using `local_action`, `delegate_to`, or command modules  
+  for full automation. I'm also learning more about Jinja2  
+  templating to make my playbooks more dynamic and capable  
+  of doing exactly what I want.
+
+- **Centralizing Variables**  
+  Many configuration values like IPs, usernames, and domain names  
+  are currently hardcoded. I plan to move these into  
+  `group_vars/all.yml` to make the project more modular,  
+  maintainable, and easier to reuse in other setups.
+
+
 Author
 Hmoad Hajali
 Level 3 CST – Networking Student
