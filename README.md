@@ -33,7 +33,7 @@ The playbooks were deployed from a WSL Ubuntu client targeting RHEL 8 VMs.
 
 - **Firewall and Netcat Testing**:
   - Listens on port `59977`
-  - **Allows** connections from `SERVER` (172.16.30.0/16) and `ALIAS` (172.16.32.0/16)
+  - **Allows** connections from `SERVER` (172.16.30.0/24) and `ALIAS` (172.16.32.0/24)
   - **Rejects** connections from the `CLIENT` network (172.16.31.0/16)
 
 - **DNS Services**:
@@ -55,10 +55,6 @@ The playbooks were deployed from a WSL Ubuntu client targeting RHEL 8 VMs.
 - iptables
 - BIND (`named`)
 - Netcat (nc)
-
-## Future Improvements
-
-This project could be improved further in the following ways:
 
 ## Future Improvements
 
